@@ -1,0 +1,18 @@
+version: '3.8'
+services:
+  api:
+    build:
+      context: .
+      dockerfile: CountryExplorer.API/Dockerfile
+    ports:
+      - "5117:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+  ui:
+    build:
+      context: ./CountryExplorer.UI
+      dockerfile: Dockerfile
+    ports:
+      - "4200:80"
+    depends_on:
+      - api 
