@@ -4,6 +4,7 @@
         <TargetFramework>net8.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <UserSecretsId>cb818af4-6df3-43bb-8851-5529cae5ef88</UserSecretsId>
     </PropertyGroup>
 
     <ItemGroup>
@@ -12,8 +13,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\CountryExplorer.Domain\CountryExplorer.Domain.csproj" />
-        <ProjectReference Include="..\CountryExplorer.Shared\CountryExplorer.Shared.csproj" />
+        <ProjectReference Include="..\CountryExplorer.Domain\CountryExplorer.Domain.csproj"/>
+        <ProjectReference Include="..\CountryExplorer.Shared\CountryExplorer.Shared.csproj"/>
     </ItemGroup>
 
 </Project>
