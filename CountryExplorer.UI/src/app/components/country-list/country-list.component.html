@@ -74,6 +74,18 @@
     </nz-empty>
   </nz-spin>
 
+  <nz-pagination
+    *ngIf="totalCount > 0"
+    [nzTotal]="totalCount"
+    [(nzPageIndex)]="pageNumber"
+    [nzPageSize]="pageSize"
+    [nzPageSizeOptions]="[10, 20, 50, 100]"
+    (nzPageIndexChange)="onPageIndexChange($event)"
+    (nzPageSizeChange)="onPageSizeChange($event)"
+    nzShowSizeChanger
+    nzShowQuickJumper>
+  </nz-pagination>
+
   <nz-modal
     [(nzVisible)]="isDetailModalVisible"
     [nzTitle]="selectedCountry ? selectedCountry.name.common : ''"
