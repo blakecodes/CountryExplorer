@@ -13,10 +13,16 @@ public class CountriesController(
     : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<List<Country>>> GetAllCountries()
+    public async Task<ActionResult> GetAllCountries([FromQuery] int? pageNumber, [FromQuery] int? pageSize)
     {
         try
         {
+            if (pageNumber.HasValue && pageSize.HasValue)
+            {
+                var pagedResult = await countryService.GetAllCountriesAsync(pageNumber.Value, pageSize.Value);
+                return Ok(pagedResult);
+            }
+
             var countries = await countryService.GetAllCountriesAsync();
             return Ok(countries);
         }
@@ -28,10 +34,18 @@ public class CountriesController(
     }
 
     [HttpGet("region/{region}")]
-    public async Task<ActionResult<List<Country>>> GetCountriesByRegion(string region)
+    public async Task<ActionResult> GetCountriesByRegion(string region, [FromQuery] int? pageNumber,
+        [FromQuery] int? pageSize)
     {
         try
         {
+            if (pageNumber.HasValue && pageSize.HasValue)
+            {
+                var pagedResult =
+                    await countryService.GetCountriesByRegionAsync(region, pageNumber.Value, pageSize.Value);
+                return Ok(pagedResult);
+            }
+
             var countries = await countryService.GetCountriesByRegionAsync(region);
             return Ok(countries);
         }
@@ -43,11 +57,19 @@ public class CountriesController(
     }
 
     [HttpGet("search")]
-    public async Task<ActionResult<List<Country>>> SearchCountries([FromQuery] string name)
+    public async Task<ActionResult> SearchCountries([FromQuery] string name, [FromQuery] int? pageNumber,
+        [FromQuery] int? pageSize)
     {
         try
         {
             if (string.IsNullOrWhiteSpace(name)) return BadRequest("Name parameter is required");
+
+            if (pageNumber.HasValue && pageSize.HasValue)
+            {
+                var pagedResult =
+                    await countryService.SearchCountriesByNameAsync(name, pageNumber.Value, pageSize.Value);
+                return Ok(pagedResult);
+            }
 
             var countries = await countryService.SearchCountriesByNameAsync(name);
             return Ok(countries);
