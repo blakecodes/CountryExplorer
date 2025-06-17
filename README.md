@@ -1,5 +1,21 @@
 # CountryExplorer
 
+## Running with Docker Compose
+
+The simplest way to spin up both the API and the UI together is with Docker Compose. From the project root, run:
+
+```bash
+docker-compose up --build
+```
+
+This will:
+1. Build and start the .NET API container (exposed on port 5117).
+2. Build the Angular UI, serve it with Nginx, and expose it on port 4200.
+
+Once the containers are running, open your browser at [http://localhost:4200](http://localhost:4200). The UI will communicate with the API container automatically.
+
+---
+
 ## Running the UI (Angular)
 
 1. Open a terminal and navigate to the `CountryExplorer.UI` directory:
