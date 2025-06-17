@@ -14,6 +14,16 @@ This will:
 
 Once the containers are running, open your browser at [http://localhost:4200](http://localhost:4200). The UI will communicate with the API container automatically.
 
+**Environment Variables**
+
+The API requires an OpenWeather API key. Create a `.env` file in the project root (same folder as `docker-compose.yml`) and add:
+
+```env
+OPENWEATHER_API_KEY=<your_api_key_here>
+```
+
+Docker Compose will inject this value into the container using the `OpenWeatherApi__ApiKey` environment variable, which overrides `appsettings.json`.
+
 ---
 
 ## Running the UI (Angular)
