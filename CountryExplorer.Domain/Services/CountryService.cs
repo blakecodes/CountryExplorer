@@ -9,19 +9,19 @@ public class CountryService(ICountryRestService countryRestService)
     public async Task<List<Country>> GetAllCountriesAsync()
     {
         var allCountries = await countryRestService.GetAllCountriesAsync();
-        return allCountries;
+        return SortCountries(allCountries);
     }
 
     public async Task<PagedResult<Country>> GetAllCountriesAsync(int pageNumber, int pageSize)
     {
         var allCountries = await countryRestService.GetAllCountriesAsync();
-        return CreatePagedResult(allCountries, pageNumber, pageSize);
+        return CreatePagedResult(SortCountries(allCountries), pageNumber, pageSize);
     }
 
     public async Task<List<Country>> GetCountriesByRegionAsync(string region)
     {
         var allCountries = await countryRestService.GetAllCountriesAsync();
-        return allCountries.Where(c => c.Region?.Equals(region, StringComparison.OrdinalIgnoreCase) == true).ToList();
+        return SortCountries(allCountries.Where(c => c.Region?.Equals(region, StringComparison.OrdinalIgnoreCase) == true));
     }
 
     public async Task<PagedResult<Country>> GetCountriesByRegionAsync(string region, int pageNumber, int pageSize)
@@ -33,10 +33,11 @@ public class CountryService(ICountryRestService countryRestService)
     public async Task<List<Country>> SearchCountriesByNameAsync(string name)
     {
         var allCountries = await countryRestService.GetAllCountriesAsync();
-        return allCountries.Where(c =>
+        var filtered = allCountries.Where(c =>
             c.Name?.Common?.Contains(name, StringComparison.OrdinalIgnoreCase) == true ||
             c.Name?.Official?.Contains(name, StringComparison.OrdinalIgnoreCase) == true
-        ).ToList();
+        );
+        return SortCountries(filtered);
     }
 
     public async Task<PagedResult<Country>> SearchCountriesByNameAsync(string name, int pageNumber, int pageSize)
@@ -80,5 +81,12 @@ public class CountryService(ICountryRestService countryRestService)
             PageNumber = pageNumber,
             PageSize = pageSize
         };
+    }
+
+    private static List<Country> SortCountries(IEnumerable<Country> countries)
+    {
+        return countries
+            .OrderBy(c => c.Name?.Common ?? string.Empty, StringComparer.OrdinalIgnoreCase)
+            .ToList();
     }
 }
