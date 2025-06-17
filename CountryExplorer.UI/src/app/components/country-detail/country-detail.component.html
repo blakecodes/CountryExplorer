@@ -1,0 +1,120 @@
+<div class="country-detail-container">
+  <div class="flag-section">
+    <img [src]="country.flags.svg" [alt]="country.name.common + ' flag'" class="country-flag-large">
+  </div>
+
+  <nz-divider></nz-divider>
+
+  <nz-descriptions nzBordered [nzColumn]="{ xxl: 2, xl: 2, lg: 2, md: 1, sm: 1, xs: 1 }">
+    <nz-descriptions-item nzTitle="Official Name">
+      {{ country.name.official }}
+    </nz-descriptions-item>
+    <nz-descriptions-item nzTitle="Capital">
+      <nz-tag *ngFor="let capital of country.capital" [nzColor]="'blue'">
+        <span nz-icon nzType="environment" nzTheme="outline"></span>
+        {{ capital }}
+      </nz-tag>
+    </nz-descriptions-item>
+    <nz-descriptions-item nzTitle="Region">
+      {{ country.region }}
+    </nz-descriptions-item>
+    <nz-descriptions-item nzTitle="Subregion">
+      {{ country.subregion }}
+    </nz-descriptions-item>
+    <nz-descriptions-item nzTitle="Languages">
+      {{ getLanguagesList() }}
+    </nz-descriptions-item>
+    <nz-descriptions-item nzTitle="Currencies">
+      {{ getCurrenciesList() }}
+    </nz-descriptions-item>
+  </nz-descriptions>
+
+  <nz-divider></nz-divider>
+
+  <div nz-row [nzGutter]="16">
+    <div nz-col [nzSpan]="8">
+      <nz-statistic
+        [nzValue]="formatPopulation(country.population)"
+        [nzTitle]="'Population'"
+        [nzPrefix]="populationIcon"
+      ></nz-statistic>
+      <ng-template #populationIcon>
+        <span nz-icon nzType="team" style="color: #1890ff;"></span>
+      </ng-template>
+    </div>
+    <div nz-col [nzSpan]="8">
+      <nz-statistic
+        [nzValue]="formatArea(country.area)"
+        [nzTitle]="'Area'"
+        [nzPrefix]="areaIcon"
+      ></nz-statistic>
+      <ng-template #areaIcon>
+        <span nz-icon nzType="expand" style="color: #52c41a;"></span>
+      </ng-template>
+    </div>
+  </div>
+
+  <nz-divider></nz-divider>
+
+  <div class="weather-section" *ngIf="country.capital?.[0]">
+    <div class="weather-header">
+      <h3>Current Weather in {{ country.capital[0] }}</h3>
+      <div class="temperature-toggle" *ngIf="weather">
+        <span>°C</span>
+        <nz-switch [(ngModel)]="isFahrenheit"></nz-switch>
+        <span>°F</span>
+      </div>
+    </div>
+    <nz-spin [nzSpinning]="loadingWeather">
+      <nz-card *ngIf="weather" class="weather-card">
+        <div nz-row [nzGutter]="16" nzAlign="middle">
+          <div nz-col [nzSpan]="8" class="weather-icon-col">
+            <img [src]="getWeatherIcon(weather.icon)" [alt]="weather.description" class="weather-icon">
+            <p class="weather-description">{{ weather.description }}</p>
+          </div>
+          <div nz-col [nzSpan]="16">
+            <div nz-row [nzGutter]="[16, 16]">
+              <div nz-col [nzSpan]="12">
+                <nz-statistic
+                  [nzValue]="getDisplayTemperature()"
+                  [nzTitle]="'Temperature'"
+                  [nzSuffix]="getTemperatureUnit()"
+                  [nzPrefix]="tempIcon"
+                ></nz-statistic>
+                <ng-template #tempIcon>
+                  <span nz-icon nzType="fire" style="color: #fa541c;"></span>
+                </ng-template>
+              </div>
+              <div nz-col [nzSpan]="12">
+                <nz-statistic
+                  [nzValue]="weather.humidity"
+                  [nzTitle]="'Humidity'"
+                  [nzSuffix]="'%'"
+                  [nzPrefix]="humidityIcon"
+                ></nz-statistic>
+                <ng-template #humidityIcon>
+                  <span nz-icon nzType="cloud" style="color: #1890ff;"></span>
+                </ng-template>
+              </div>
+              <div nz-col [nzSpan]="12">
+                <nz-statistic
+                  [nzValue]="weather.windSpeed"
+                  [nzTitle]="'Wind Speed'"
+                  [nzSuffix]="'m/s'"
+                  [nzPrefix]="windIcon"
+                ></nz-statistic>
+                <ng-template #windIcon>
+                  <span nz-icon nzType="dash" style="color: #52c41a;"></span>
+                </ng-template>
+              </div>
+            </div>
+          </div>
+        </div>
+      </nz-card>
+      <div *ngIf="!weather && !loadingWeather" class="no-weather">
+        <span nz-icon nzType="cloud" style="font-size: 48px; color: #bfbfbf;"></span>
+        <p>Weather data not available</p>
+      </div>
+    </nz-spin>
+  </div>
+</div>

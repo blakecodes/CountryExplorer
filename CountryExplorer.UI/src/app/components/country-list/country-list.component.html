@@ -1,0 +1,91 @@
+<div class="country-list-container">
+  <div class="filters-section">
+    <div nz-row [nzGutter]="16">
+      <div nz-col [nzSpan]="12">
+        <label class="filter-label">Search by Country Name</label>
+        <nz-input-group [nzPrefix]="searchIcon">
+          <input
+            nz-input
+            placeholder="Search countries..."
+            [(ngModel)]="searchTerm"
+            (ngModelChange)="onSearch($event)"
+          />
+        </nz-input-group>
+        <ng-template #searchIcon>
+          <span nz-icon nzType="search"></span>
+        </ng-template>
+      </div>
+      <div nz-col [nzSpan]="12">
+        <label class="filter-label">Filter by Region</label>
+        <nz-select
+          nzShowSearch
+          nzAllowClear
+          nzPlaceHolder="All Regions"
+          [(ngModel)]="selectedRegion"
+          (ngModelChange)="onRegionChange($event)"
+          style="width: 100%;"
+        >
+          <nz-option nzValue="" nzLabel="All Regions"></nz-option>
+          <nz-option *ngFor="let region of regions" [nzValue]="region" [nzLabel]="region"></nz-option>
+        </nz-select>
+      </div>
+    </div>
+  </div>
+
+  <nz-spin [nzSpinning]="loading" nzTip="Loading countries...">
+    <div class="countries-grid" *ngIf="filteredCountries.length > 0">
+      <nz-card
+        *ngFor="let country of filteredCountries"
+        class="country-card"
+        [nzHoverable]="true"
+        (click)="showCountryDetail(country)"
+      >
+        <div class="country-content">
+          <div class="flag-container">
+            <img [src]="country.flags.png" [alt]="country.name.common + ' flag'" class="country-flag">
+          </div>
+          <h3 class="country-name">{{ country.name.common }}</h3>
+          <div class="country-info">
+            <div class="info-item">
+              <span nz-icon nzType="environment" nzTheme="outline"></span>
+              <span>{{ country.capital?.[0] || 'N/A' }}</span>
+            </div>
+            <div class="info-item">
+              <span nz-icon nzType="team" nzTheme="outline"></span>
+              <span>{{ formatPopulation(country.population) }}</span>
+            </div>
+            <div class="info-item">
+              <span nz-icon nzType="global" nzTheme="outline"></span>
+              <span>{{ country.region }}</span>
+            </div>
+            <div class="info-item" *ngIf="country.languages">
+              <span nz-icon nzType="message" nzTheme="outline"></span>
+              <span>{{ getLanguagesList(country.languages) }}</span>
+            </div>
+          </div>
+        </div>
+      </nz-card>
+    </div>
+
+    <nz-empty *ngIf="filteredCountries.length === 0 && !loading" [nzNotFoundContent]="notFoundContent">
+      <ng-template #notFoundContent>
+        <span>No countries found</span>
+      </ng-template>
+    </nz-empty>
+  </nz-spin>
+
+  <nz-modal
+    [(nzVisible)]="isDetailModalVisible"
+    [nzTitle]="selectedCountry ? selectedCountry.name.common : ''"
+    [nzFooter]="null"
+    (nzOnCancel)="handleModalClose()"
+    [nzWidth]="800"
+  >
+    <ng-container *nzModalContent>
+      <app-country-detail
+        *ngIf="selectedCountry"
+        [country]="selectedCountry"
+      ></app-country-detail>
+    </ng-container>
+  </nz-modal>
+</div>
