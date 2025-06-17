@@ -1,177 +1,84 @@
-using System.Net;
-using System.Text.Json;
 using CountryExplorer.Domain.Interfaces;
 using CountryExplorer.Shared.Models;
-using Microsoft.Extensions.Logging;
 
 namespace CountryExplorer.Domain.Services;
 
-public class CountryService(HttpClient httpClient, ILogger<CountryService> logger) : ICountryService
+public class CountryService(ICountryRestService countryRestService)
+    : ICountryService
 {
-    private const string BaseUrl = "https://restcountries.com/v3.1";
-
-    // Maximum 10 fields as per API limitation
-    private readonly string _fields = "name,capital,region,subregion,population,languages,flags,currencies,cca2,area";
-
-    private readonly JsonSerializerOptions _jsonOptions = new()
-    {
-        PropertyNameCaseInsensitive = true
-    };
-
     public async Task<List<Country>> GetAllCountriesAsync()
     {
-        try
-        {
-            // Use simple string concatenation to match the working format
-            var url = $"{BaseUrl}/all?fields={_fields}";
+        var allCountries = await countryRestService.GetAllCountriesAsync();
+        return allCountries;
+    }
 
-            logger.LogInformation("Attempting to fetch countries from: {Url}", url);
-
-            var response = await httpClient.GetAsync(url);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                var errorContent = await response.Content.ReadAsStringAsync();
-                logger.LogError("REST Countries API returned {StatusCode}: {ReasonPhrase}. Content: {ErrorContent}",
-                    response.StatusCode, response.ReasonPhrase, errorContent);
-                logger.LogError("Request URL was: {Url}", url);
-
-                // Log all request headers
-                logger.LogError("Request Headers:");
-                foreach (var header in httpClient.DefaultRequestHeaders)
-                    logger.LogError("{HeaderName}: {HeaderValue}", header.Key, string.Join(", ", header.Value));
-            }
-
-            response.EnsureSuccessStatusCode();
-
-            var json = await response.Content.ReadAsStringAsync();
-            var countries = JsonSerializer.Deserialize<List<Country>>(json, _jsonOptions);
-
-            return countries ?? new List<Country>();
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error fetching all countries");
-            throw;
-        }
+    public async Task<PagedResult<Country>> GetAllCountriesAsync(int pageNumber, int pageSize)
+    {
+        var allCountries = await countryRestService.GetAllCountriesAsync();
+        return CreatePagedResult(allCountries, pageNumber, pageSize);
     }
 
     public async Task<List<Country>> GetCountriesByRegionAsync(string region)
     {
-        try
-        {
-            var url = $"{BaseUrl}/region/{region}?fields={_fields}";
+        var allCountries = await countryRestService.GetAllCountriesAsync();
+        return allCountries.Where(c => c.Region?.Equals(region, StringComparison.OrdinalIgnoreCase) == true).ToList();
+    }
 
-            logger.LogInformation("Attempting to fetch countries from: {Url}", url);
-
-            var response = await httpClient.GetAsync(url);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                var errorContent = await response.Content.ReadAsStringAsync();
-                logger.LogError("REST Countries API returned {StatusCode}: {ReasonPhrase}. Content: {ErrorContent}",
-                    response.StatusCode, response.ReasonPhrase, errorContent);
-                logger.LogError("Request URL was: {Url}", url);
-            }
-
-            response.EnsureSuccessStatusCode();
-
-            var json = await response.Content.ReadAsStringAsync();
-            var countries = JsonSerializer.Deserialize<List<Country>>(json, _jsonOptions);
-
-            return countries ?? new List<Country>();
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error fetching countries by region: {Region}", region);
-            throw;
-        }
+    public async Task<PagedResult<Country>> GetCountriesByRegionAsync(string region, int pageNumber, int pageSize)
+    {
+        var countries = await GetCountriesByRegionAsync(region);
+        return CreatePagedResult(countries, pageNumber, pageSize);
     }
 
     public async Task<List<Country>> SearchCountriesByNameAsync(string name)
     {
-        try
-        {
-            var url = $"{BaseUrl}/name/{name}?fields={_fields}";
+        var allCountries = await countryRestService.GetAllCountriesAsync();
+        return allCountries.Where(c =>
+            c.Name?.Common?.Contains(name, StringComparison.OrdinalIgnoreCase) == true ||
+            c.Name?.Official?.Contains(name, StringComparison.OrdinalIgnoreCase) == true
+        ).ToList();
+    }
 
-            logger.LogInformation("Attempting to fetch countries from: {Url}", url);
-
-            var response = await httpClient.GetAsync(url);
-
-            if (response.StatusCode == HttpStatusCode.NotFound) return new List<Country>();
-
-            if (!response.IsSuccessStatusCode)
-            {
-                var errorContent = await response.Content.ReadAsStringAsync();
-                logger.LogError("REST Countries API returned {StatusCode}: {ReasonPhrase}. Content: {ErrorContent}",
-                    response.StatusCode, response.ReasonPhrase, errorContent);
-                logger.LogError("Request URL was: {Url}", url);
-            }
-
-            response.EnsureSuccessStatusCode();
-
-            var json = await response.Content.ReadAsStringAsync();
-            var countries = JsonSerializer.Deserialize<List<Country>>(json, _jsonOptions);
-
-            return countries ?? new List<Country>();
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error searching countries by name: {Name}", name);
-            throw;
-        }
+    public async Task<PagedResult<Country>> SearchCountriesByNameAsync(string name, int pageNumber, int pageSize)
+    {
+        var countries = await SearchCountriesByNameAsync(name);
+        return CreatePagedResult(countries, pageNumber, pageSize);
     }
 
     public async Task<Country> GetCountryByCodeAsync(string code)
     {
-        try
-        {
-            var url = $"{BaseUrl}/alpha/{code}?fields={_fields}";
-
-            logger.LogInformation("Attempting to fetch country from: {Url}", url);
-
-            var response = await httpClient.GetAsync(url);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                var errorContent = await response.Content.ReadAsStringAsync();
-                logger.LogError("REST Countries API returned {StatusCode}: {ReasonPhrase}. Content: {ErrorContent}",
-                    response.StatusCode, response.ReasonPhrase, errorContent);
-                logger.LogError("Request URL was: {Url}", url);
-            }
-
-            response.EnsureSuccessStatusCode();
-
-            var json = await response.Content.ReadAsStringAsync();
-            var country = JsonSerializer.Deserialize<Country>(json, _jsonOptions);
-
-            return country;
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error fetching country by code: {Code}", code);
-            throw;
-        }
+        var allCountries = await countryRestService.GetAllCountriesAsync();
+        return allCountries.FirstOrDefault(c => c.Cca2?.Equals(code, StringComparison.OrdinalIgnoreCase) == true);
     }
 
     public async Task<List<string>> GetAllRegionsAsync()
     {
-        try
-        {
-            var countries = await GetAllCountriesAsync();
-            var regions = countries
-                .Where(c => !string.IsNullOrEmpty(c.Region))
-                .Select(c => c.Region)
-                .Distinct()
-                .OrderBy(r => r)
-                .ToList();
+        var allCountries = await countryRestService.GetAllCountriesAsync();
+        return allCountries
+            .Where(c => !string.IsNullOrEmpty(c.Region))
+            .Select(c => c.Region)
+            .Distinct()
+            .OrderBy(r => r)
+            .ToList();
+    }
 
-            return regions;
-        }
-        catch (Exception ex)
+    private PagedResult<Country> CreatePagedResult(List<Country> allItems, int pageNumber, int pageSize)
+    {
+        pageNumber = Math.Max(1, pageNumber);
+        pageSize = Math.Max(1, Math.Min(100, pageSize)); // Limit page size to 100
+
+        var totalCount = allItems.Count;
+        var items = allItems
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
+
+        return new PagedResult<Country>
         {
-            logger.LogError(ex, "Error fetching all regions");
-            throw;
-        }
+            Items = items,
+            TotalCount = totalCount,
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        };
     }
 }

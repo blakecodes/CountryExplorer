@@ -29,7 +29,7 @@ public class Program
         });
 
         // Register HttpClient for external API calls
-        builder.Services.AddHttpClient<ICountryService, CountryService>(client =>
+        builder.Services.AddHttpClient<ICountryRestService, CountryRestService>(client =>
         {
             client.DefaultRequestHeaders.Add("Accept", "application/json");
         });
@@ -40,6 +40,7 @@ public class Program
         });
 
         // Register services
+        builder.Services.AddScoped<ICountryRestService, CountryRestService>();
         builder.Services.AddScoped<ICountryService, CountryService>();
         builder.Services.AddScoped<IWeatherService, WeatherService>();
 
